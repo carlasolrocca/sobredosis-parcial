@@ -22,6 +22,7 @@ class Programa(val titulo : String,
                val diaEmision : LocalDate,
                val duracionMinutos : Int)
 {
+    val restriccionesAsociadas : MutableList<Restriccion> = mutableListOf()
     val ratingUltimasEmisiones : MutableList<Double> = mutableListOf()
 
     fun agregarRating(rating : Double) {
@@ -35,10 +36,12 @@ class Programa(val titulo : String,
     fun cantidadMaxRatings() : Boolean = ratingUltimasEmisiones.size == 5   //Solo admite 5 ratings
     fun ratingPromedio() : Double = ratingUltimasEmisiones.average()
     fun cantidadConductores() : Int = conductoresPrincipales.size
+    fun loConduce(conductor : String) : Boolean = conductoresPrincipales.contains(conductor)
 }
 
 // Clase Restriccion
 abstract class Restriccion {
+    val accionesAsociadas : MutableList<Accion> = mutableListOf()
     abstract fun cumpleRestriccion(programa: Programa): Boolean
 }
 
@@ -50,11 +53,8 @@ class CantidadMaxConductores(val cantidad : Int) : Restriccion() {
     override fun cumpleRestriccion(programa: Programa): Boolean = programa.cantidadConductores() <= cantidad
 }
 
-//Recibe un conductor deseado o tiene una lista que recorre?
 class ConductorEspecifico(val conductorDeseado : String) : Restriccion() {
-    val conductoresEspecificos : MutableList<String> = mutableListOf("Juan Carlos Pérez Loizeau", "Mario Monteverde")
-    override fun cumpleRestriccion(programa: Programa): Boolean = programa.conductoresPrincipales.contains(conductorDeseado) ||
-            conductoresEspecificos.contains(conductorDeseado)
+    override fun cumpleRestriccion(programa: Programa): Boolean = programa.loConduce(conductorDeseado)
 }
 
 class PresupuestoMaximo(val tope : Double) : Restriccion() {

@@ -41,8 +41,13 @@ class Programa(val titulo : String,
 
 // Clase Restriccion
 abstract class Restriccion {
-    val accionesAsociadas : MutableList<Accion> = mutableListOf()
+    val accionesAsociadas : MutableList<Accion> = mutableListOf()       //Punto 2 y 3
+
     abstract fun cumpleRestriccion(programa: Programa): Boolean
+
+    fun ejecutarAcciones(){
+        accionesAsociadas.forEach { it.execute() }
+    }
 }
 
 class RatingSuperiorA(val valorRating : Double) : Restriccion() {
@@ -89,6 +94,32 @@ class RestriccionCombinadaAND(val restricciones : MutableSet<Restriccion>) : Res
 //el programa se mueve de dia
 
 //hay una PERSONA QUE PROGRAMA EL CANAL (class Canal? class PersonaEncargada?)
-class Accion {}
+interface Accion {
+    abstract fun execute()
+}
+
+class DividirPrograma() : Accion {
+    override fun execute() {
+        TODO("Implementar la lógica para dividir el programa")
+    }
+}
+
+class ReemplazarPorLosSimpsons() : Accion {
+    override fun execute() {
+        TODO("Implementar la lógica para reemplazar el programa por Los Simpsons")
+    }
+}
+
+class FusionarPrograma() : Accion {
+    override fun execute() {
+        TODO("Implementar la lógica para fusionar el programa con el siguiente en la grilla")
+    }
+}
+
+class CambiarDiaEmision() : Accion {
+    override fun execute() {
+        TODO("Implementar la lógica para cambiar el día de emisión del programa")
+    }
+}
 
 // *** FIN PUNTO 2 ***

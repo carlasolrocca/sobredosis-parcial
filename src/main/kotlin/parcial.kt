@@ -2,22 +2,13 @@ package ar.edu.unsam.algo2
 
 import java.time.LocalDate
 
-/*
-Quiero modelar un sistema que gestione la programacion de un canal.
-Programa:
-    *tiene titulo
-    *varios conductores -principales- (hay secundarios?)
-    *un presupuesto base
-    *sponsors de publicidad
-    *el dia que sale (Lunes / Domingo) (puede salir más de un dia?)
-    *la duracion del programa (en minutos)
-
-    *tambien se conoce los ratings de las ultimas 5 emisiones
-*/
+//Exceptions
+class BusinessException(mensaje: String) : Throwable()
 
 // *** PUNTO 1: Restricciones ***
+// Clase Programa
 class Programa(val titulo : String,
-               val conductores: MutableList<String>,    //No se si hay class Conductor
+               val conductoresPrincipales: MutableList<String>,    //No se si hay class Conductor
                val presupuestoBase : Double,
                val sponsors: MutableList<String>,       //No se si hay class Sponsor
                val diaEmision : LocalDate,
@@ -33,48 +24,45 @@ class Programa(val titulo : String,
         }
     }
 
-    fun cantidadMaxRatings() : Boolean = ratingUltimasEmisiones.size == 5
+    fun cantidadMaxRatings() : Boolean = ratingUltimasEmisiones.size == 5   //Solo admite 5 ratings
+    fun ratingPromedio() : Double = ratingUltimasEmisiones.average()
+    fun cantidadConductores() : Int = conductoresPrincipales.size
 }
 
-
+// Clase Restriccion
 abstract class Restriccion {
     abstract fun cumpleRestriccion(programa: Programa): Boolean
 }
 
-class RatingSuperiorA() : Restriccion() {
-    override fun cumpleRestriccion(programa: Programa): Boolean {
-        TODO("Not yet implemented")
-    }
+class RatingSuperiorA(val valorRating : Double) : Restriccion() {
+    override fun cumpleRestriccion(programa: Programa): Boolean = programa.ratingPromedio() > valorRating
 }
 
-class CantidadMaxConductores() : Restriccion() {
-    override fun cumpleRestriccion(programa: Programa): Boolean {
-        TODO("Not yet implemented")
-    }
+class CantidadMaxConductores(val cantidad : Int) : Restriccion() {
+    override fun cumpleRestriccion(programa: Programa): Boolean = programa.cantidadConductores() <= cantidad
 }
 
+//interpreto que con que este alguno de esos conductores en la lista de principales, ya está ok
 class ConductorEspecifico() : Restriccion() {
-    override fun cumpleRestriccion(programa: Programa): Boolean {
-        TODO("Not yet implemented")
-    }
+    val conductoresEspecificos : MutableList<String> = mutableListOf("Juan Carlos Pérez Loizeau", "Mario Monteverde")
+    override fun cumpleRestriccion(programa: Programa): Boolean = programa.conductoresPrincipales.any { it in conductoresEspecificos }
 }
 
-class PresupuestoMaximo() : Restriccion() {
-    override fun cumpleRestriccion(programa: Programa): Boolean {
-        TODO("Not yet implemented")
-    }
+class PresupuestoMaximo(val tope : Double) : Restriccion() {
+    override fun cumpleRestriccion(programa: Programa): Boolean = programa.presupuestoBase <= tope
 }
 
-class RestriccionCombinada() : Restriccion() {
-    override fun cumpleRestriccion(programa: Programa): Boolean {
-        TODO("Not yet implemented")
-    }
+//Composite de restricciones OR
+class RestriccionCombinadaOR(val restricciones : MutableSet<Restriccion>) : Restriccion() {
+    override fun cumpleRestriccion(programa: Programa): Boolean = restricciones.any { it.cumpleRestriccion(programa) }
 }
 
+//Composite de restricciones AND
+class RestriccionCombinadaAND(val restricciones : MutableSet<Restriccion>) : Restriccion() {
+    override fun cumpleRestriccion(programa: Programa): Boolean = restricciones.all { it.cumpleRestriccion(programa) }
+}
 
 // *** FIN PUNTO 1 ***
 
 
 
-//Exceptions
-class BusinessException(mensaje: String) : Throwable() {}

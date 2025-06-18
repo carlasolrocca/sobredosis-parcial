@@ -1,5 +1,7 @@
 package ar.edu.unsam.algo2
 
+import java.time.LocalDate
+
 /*
 Quiero modelar un sistema que gestione la programacion de un canal.
 Programa:
@@ -10,14 +12,30 @@ Programa:
     *el dia que sale (Lunes / Domingo) (puede salir más de un dia?)
     *la duracion del programa (en minutos)
 
-    *tambien se conoce los ratings de las ultimas 5 emisiones (del mismo programa o de los ultimos
-    5 programas que pasó el canal?)
+    *tambien se conoce los ratings de las ultimas 5 emisiones
 */
 
 // *** PUNTO 1: Restricciones ***
-/*
-Mantener un programa implica una serie de criterios VARIABLES que son restricciones
-*/
+class Programa(val titulo : String,
+               val conductores: MutableList<String>,    //No se si hay class Conductor
+               val presupuestoBase : Double,
+               val sponsors: MutableList<String>,       //No se si hay class Sponsor
+               val diaEmision : LocalDate,
+               val duracionMinutos : Int)
+{
+    val ratingUltimasEmisiones : MutableList<Double> = mutableListOf()
+
+    fun agregarRating(rating : Double) {
+        if(!cantidadMaxRatings()){
+            ratingUltimasEmisiones.add(rating)
+        }else{
+            throw BusinessException("No se pueden agregar mas ratings")
+        }
+    }
+
+    fun cantidadMaxRatings() : Boolean = ratingUltimasEmisiones.size == 5
+}
+
 
 abstract class Restriccion {
     abstract fun cumpleRestriccion(programa: Programa): Boolean
@@ -53,5 +71,10 @@ class RestriccionCombinada() : Restriccion() {
     }
 }
 
-class Programa {}
+
 // *** FIN PUNTO 1 ***
+
+
+
+//Exceptions
+class BusinessException(mensaje: String) : Throwable() {}

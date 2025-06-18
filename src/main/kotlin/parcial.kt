@@ -4,7 +4,15 @@ import java.time.LocalDate
 
 //Exceptions
 class BusinessException(mensaje: String) : Throwable()
-
+/*
+* Tengo un Programa con sus atributos. Ese Programa tiene que cumplir Restricciones.
+* Hay una clase Restriccion con metodo cumpleRestriccion.
+* Si el Programa no cumple las restricciones, se ejecutan Acciones.
+* Hay una clase Accion y hay una lista de acciones asociadas a la Restriccion.
+* Voy a tener una Grilla de programacion que posee Programas
+* Habla de una persona encargada haga ciertas cosas dada una Grilla. No se si es una entidad
+ necesaria o no.
+*/
 // *** PUNTO 1: Restricciones ***
 // Clase Programa
 class Programa(val titulo : String,
@@ -42,10 +50,11 @@ class CantidadMaxConductores(val cantidad : Int) : Restriccion() {
     override fun cumpleRestriccion(programa: Programa): Boolean = programa.cantidadConductores() <= cantidad
 }
 
-//interpreto que con que este alguno de esos conductores en la lista de principales, ya está ok
-class ConductorEspecifico() : Restriccion() {
+//Recibe un conductor deseado o tiene una lista que recorre?
+class ConductorEspecifico(val conductorDeseado : String) : Restriccion() {
     val conductoresEspecificos : MutableList<String> = mutableListOf("Juan Carlos Pérez Loizeau", "Mario Monteverde")
-    override fun cumpleRestriccion(programa: Programa): Boolean = programa.conductoresPrincipales.any { it in conductoresEspecificos }
+    override fun cumpleRestriccion(programa: Programa): Boolean = programa.conductoresPrincipales.contains(conductorDeseado) ||
+            conductoresEspecificos.contains(conductorDeseado)
 }
 
 class PresupuestoMaximo(val tope : Double) : Restriccion() {
@@ -64,5 +73,22 @@ class RestriccionCombinadaAND(val restricciones : MutableSet<Restriccion>) : Res
 
 // *** FIN PUNTO 1 ***
 
+// *** PUNTO 2: Acciones ***
+//Una accion es partir un programa en dos:
+//mitad conductores en un algo y la segunda mitad en otro.
+//presupuesto dividido a la mitad. los sponsors se comparten
+//se parte la duracion en minutos a la mitad para c/u
+//titulo:"{primera palabra del título} en el aire!" y "{segunda palabra del título}"
+// o "Programa sin nombre" si no hubiera 2da palabra
+//tienen los mismos dias de emision
 
+//el programa desaparece y lo reemplaza los simpsons
 
+//se fusionan el programa con el siguiente de la GRILLA (hay class Grilla?)
+
+//el programa se mueve de dia
+
+//hay una PERSONA QUE PROGRAMA EL CANAL (class Canal? class PersonaEncargada?)
+class Accion {}
+
+// *** FIN PUNTO 2 ***

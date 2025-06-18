@@ -8,13 +8,12 @@ class BusinessException(mensaje: String) : Throwable()
 * Tengo un Programa con sus atributos. Ese Programa tiene que cumplir Restricciones.
 * Hay una clase Restriccion con metodo cumpleRestriccion.
 * Si el Programa no cumple las restricciones, se ejecutan Acciones.
-* Hay una clase Accion y hay una lista de acciones asociadas a la Restriccion.
-* Voy a tener una Grilla de programacion que posee Programas
-* Habla de una persona encargada haga ciertas cosas dada una Grilla. No se si es una entidad
- necesaria o no.
+* Hay una clase Accion y hay una lista de acciones asociadas a c/Restriccion.
+* La Accion tiene un efecto sobre los Programas y por ende en la Grilla.
+* Voy a tener una Grilla de programacion que posee Programas.
 */
+
 // *** PUNTO 1: Restricciones ***
-// Clase Programa
 class Programa(val titulo : String,
                val conductoresPrincipales: MutableList<String>,    //No se si hay class Conductor
                val presupuestoBase : Double,
@@ -37,16 +36,25 @@ class Programa(val titulo : String,
     fun ratingPromedio() : Double = ratingUltimasEmisiones.average()
     fun cantidadConductores() : Int = conductoresPrincipales.size
     fun loConduce(conductor : String) : Boolean = conductoresPrincipales.contains(conductor)
+    fun mitadConductores() : Int = conductoresPrincipales.size / 2
+
+    //take toma los primeros "n" elementos y drop descarta los primeros "n" elementos
+    fun primeraMitadConductores() : MutableList<String> = conductoresPrincipales.take(mitadConductores()).toMutableList()
+    fun segundaMitadConductores() : MutableList<String> = conductoresPrincipales.drop(mitadConductores()).toMutableList()
+
+    fun mitadPresupuesto() : Double = presupuestoBase / 2
+    fun mitadDuracion() : Int = duracionMinutos / 2
+    fun dividirTitulo() : List<String> = titulo.split(" ")
 }
 
-// Clase Restriccion
+
 abstract class Restriccion {
     val accionesAsociadas : MutableList<Accion> = mutableListOf()       //Punto 2 y 3
 
     abstract fun cumpleRestriccion(programa: Programa): Boolean
 
-    fun ejecutarAcciones(){
-        accionesAsociadas.forEach { it.execute() }
+    fun ejecutarAcciones(programa : Programa, grilla : Grilla) {
+        accionesAsociadas.forEach { it.execute(programa, grilla) }
     }
 }
 
@@ -93,33 +101,70 @@ class RestriccionCombinadaAND(val restricciones : MutableSet<Restriccion>) : Res
 
 //el programa se mueve de dia
 
-//hay una PERSONA QUE PROGRAMA EL CANAL (class Canal? class PersonaEncargada?)
 interface Accion {
-    abstract fun execute()
+    abstract fun execute(programa : Programa, grilla: Grilla)
 }
 
 class DividirPrograma() : Accion {
-    override fun execute() {
-        TODO("Implementar la lógica para dividir el programa")
+    override fun execute(programa: Programa, grilla: Grilla) {
+        val primeraMitad = programa.primeraMitadConductores()
+        val segundaMitad = programa.segundaMitadConductores()
+
+        fun calculoSegundoTitulo(programa : Programa) : String {
+            val tituloPotencial = programa.dividirTitulo().getOrNull(1) //Hago calculo de 2da palabra
+            if(tituloPotencial != null){
+                return tituloPotencial
+            } else {
+                return "Programa sin nombre"
+            }
+        }
+
+        val programa1 = Programa(
+            titulo = "${programa.dividirTitulo().first()} en el aire!",   //delimita por espacio y trae la 1era palabra
+            conductoresPrincipales = primeraMitad,
+            presupuestoBase = programa.mitadPresupuesto(),
+            sponsors = programa.sponsors,
+            diaEmision = programa.diaEmision,
+            duracionMinutos = programa.mitadDuracion())
+
+        val programa2 = Programa(
+            titulo = "${calculoSegundoTitulo(programa)}", //busca la 2da palabra o devuelve null
+            conductoresPrincipales = segundaMitad,
+            presupuestoBase = programa.mitadPresupuesto(),
+            sponsors = programa.sponsors,
+            diaEmision = programa.diaEmision,
+            duracionMinutos = programa.mitadDuracion())
     }
 }
 
 class ReemplazarPorLosSimpsons() : Accion {
-    override fun execute() {
+    override fun execute(programa: Programa, grilla: Grilla) {
         TODO("Implementar la lógica para reemplazar el programa por Los Simpsons")
     }
 }
 
 class FusionarPrograma() : Accion {
-    override fun execute() {
+    override fun execute(programa: Programa, grilla: Grilla) {
         TODO("Implementar la lógica para fusionar el programa con el siguiente en la grilla")
     }
 }
 
 class CambiarDiaEmision() : Accion {
-    override fun execute() {
+    override fun execute(programa: Programa, grilla: Grilla) {
         TODO("Implementar la lógica para cambiar el día de emisión del programa")
     }
 }
 
 // *** FIN PUNTO 2 ***
+
+/*
+Hay una clase Grilla que:
+1. agrega restricciones y sus acciones
+2. tiene una lista de Programas
+3. */
+
+// *** PUNTO 3: El Proceso ***
+class Grilla(){
+
+}
+// *** FIN PUNTO 3 ***

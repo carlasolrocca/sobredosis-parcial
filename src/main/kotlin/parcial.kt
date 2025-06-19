@@ -168,12 +168,16 @@ class FusionarPrograma() : Accion {
             sponsors = sponsorAzaroso(programa, grilla.siguientePrograma(programa)),
             diaEmision = programa.diaEmision,
             duracionMinutos = duracionFusionada(programa, grilla.siguientePrograma(programa)))
+
+        grilla.eliminarPrograma(programa)
+        grilla.eliminarPrograma(grilla.siguientePrograma(programa))
+        grilla.agregarPrograma(programaFusionado)
     }
 }
 
 class CambiarDiaEmision() : Accion {
     override fun execute(programa: Programa, grilla: Grilla) {
-        TODO("Implementar la lógica para cambiar el día de emisión del programa")
+
     }
 }
 

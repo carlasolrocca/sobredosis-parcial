@@ -136,7 +136,16 @@ class DividirPrograma() : Accion {
 
 class ReemplazarPorLosSimpsons() : Accion {
     override fun execute(programa: Programa, grilla: Grilla) {
-        TODO("Implementar la lógica para reemplazar el programa por Los Simpsons")
+        grilla.eliminarPrograma(programa)
+        val repeticionSimpsons = Programa(
+            titulo = "Los Simpsons",
+            conductoresPrincipales = mutableListOf("Ninguno"),
+            presupuestoBase = 100.0,
+            sponsors = mutableListOf("Fox"),
+            diaEmision = programa.diaEmision,
+            duracionMinutos = 30
+        )
+        grilla.agregarPrograma(repeticionSimpsons)  //Es una implementacion medio boluda, no?
     }
 }
 

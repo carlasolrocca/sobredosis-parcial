@@ -87,18 +87,9 @@ class RestriccionCombinadaAND(val restricciones : MutableSet<Restriccion>) : Res
 // *** FIN PUNTO 1 ***
 
 // *** PUNTO 2: Acciones ***
-//Una accion es partir un programa en dos:
-//mitad conductores en un algo y la segunda mitad en otro.
-//presupuesto dividido a la mitad. los sponsors se comparten
-//se parte la duracion en minutos a la mitad para c/u
-//titulo:"{primera palabra del título} en el aire!" y "{segunda palabra del título}"
-// o "Programa sin nombre" si no hubiera 2da palabra
-//tienen los mismos dias de emision
-
+//Cuando parte el programa en 2, se elimina el original de la grilla y se agregan los nuevos programas!
 //el programa desaparece y lo reemplaza los simpsons
-
-//se fusionan el programa con el siguiente de la GRILLA (hay class Grilla?)
-
+//se fusionan el programa con el siguiente de la GRILLA
 //el programa se mueve de dia
 
 interface Accion {
@@ -110,9 +101,9 @@ class DividirPrograma() : Accion {
         val primeraMitad = programa.primeraMitadConductores()
         val segundaMitad = programa.segundaMitadConductores()
 
-        fun calculoSegundoTitulo(programa : Programa) : String {
+        fun calculoSegundoTitulo(programa: Programa): String {
             val tituloPotencial = programa.dividirTitulo().getOrNull(1) //Hago calculo de 2da palabra
-            if(tituloPotencial != null){
+            if (tituloPotencial != null) {
                 return tituloPotencial
             } else {
                 return "Programa sin nombre"
@@ -125,7 +116,8 @@ class DividirPrograma() : Accion {
             presupuestoBase = programa.mitadPresupuesto(),
             sponsors = programa.sponsors,
             diaEmision = programa.diaEmision,
-            duracionMinutos = programa.mitadDuracion())
+            duracionMinutos = programa.mitadDuracion()
+        )
 
         val programa2 = Programa(
             titulo = "${calculoSegundoTitulo(programa)}", //busca la 2da palabra o devuelve null
@@ -133,7 +125,12 @@ class DividirPrograma() : Accion {
             presupuestoBase = programa.mitadPresupuesto(),
             sponsors = programa.sponsors,
             diaEmision = programa.diaEmision,
-            duracionMinutos = programa.mitadDuracion())
+            duracionMinutos = programa.mitadDuracion()
+        )
+
+        grilla.eliminarPrograma(programa)   //elimina el programa original y agrega los 2 nuevos
+        grilla.agregarPrograma(programa1)
+        grilla.agregarPrograma(programa2)
     }
 }
 
@@ -165,6 +162,10 @@ Hay una clase Grilla que:
 
 // *** PUNTO 3: El Proceso ***
 class Grilla(){
+    val listaDeProgramas : MutableList<Programa> = mutableListOf()
+
+    fun agregarPrograma(programa: Programa) =  listaDeProgramas.add(programa)   //podria agregar validacion para saber si está
+    fun eliminarPrograma(programa: Programa) = listaDeProgramas.remove(programa)
 
 }
 // *** FIN PUNTO 3 ***

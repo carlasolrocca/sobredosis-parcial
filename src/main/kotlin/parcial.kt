@@ -45,13 +45,22 @@ class Programa(val titulo : String,
     fun mitadPresupuesto() : Double = presupuestoBase / 2
     fun mitadDuracion() : Int = duracionMinutos / 2
     fun dividirTitulo() : List<String> = titulo.split(" ")
+
+    fun cumpleRestricciones(grilla : Grilla) {
+        val primeraRestriccionNoCumplida = restriccionesAsociadas.find{ restriccion -> restriccion.seCumple(this) }
+        if(primeraRestriccionNoCumplida != null){
+            primeraRestriccionNoCumplida.ejecutarAcciones(this, grilla)
+        }else{
+            print("Cumple todas las condiciones")
+        }
+    }
 }
 
 
 abstract class Restriccion {
     val accionesAsociadas : MutableList<Accion> = mutableListOf()       //Punto 2 y 3
 
-    abstract fun cumpleRestriccion(programa: Programa): Boolean
+    abstract fun seCumple(programa: Programa): Boolean
 
     fun ejecutarAcciones(programa : Programa, grilla : Grilla) {
         accionesAsociadas.forEach { it.execute(programa, grilla) }
@@ -59,29 +68,29 @@ abstract class Restriccion {
 }
 
 class RatingSuperiorA(val valorRating : Double) : Restriccion() {
-    override fun cumpleRestriccion(programa: Programa): Boolean = programa.ratingPromedio() > valorRating
+    override fun seCumple(programa: Programa): Boolean = programa.ratingPromedio() > valorRating
 }
 
 class CantidadMaxConductores(val cantidad : Int) : Restriccion() {
-    override fun cumpleRestriccion(programa: Programa): Boolean = programa.cantidadConductores() <= cantidad
+    override fun seCumple(programa: Programa): Boolean = programa.cantidadConductores() <= cantidad
 }
 
 class ConductorEspecifico(val conductorDeseado : String) : Restriccion() {
-    override fun cumpleRestriccion(programa: Programa): Boolean = programa.loConduce(conductorDeseado)
+    override fun seCumple(programa: Programa): Boolean = programa.loConduce(conductorDeseado)
 }
 
 class PresupuestoMaximo(val tope : Double) : Restriccion() {
-    override fun cumpleRestriccion(programa: Programa): Boolean = programa.presupuestoBase <= tope
+    override fun seCumple(programa: Programa): Boolean = programa.presupuestoBase <= tope
 }
 
 //Composite de restricciones OR
 class RestriccionCombinadaOR(val restricciones : MutableSet<Restriccion>) : Restriccion() {
-    override fun cumpleRestriccion(programa: Programa): Boolean = restricciones.any { it.cumpleRestriccion(programa) }
+    override fun seCumple(programa: Programa): Boolean = restricciones.any { it.seCumple(programa) }
 }
 
 //Composite de restricciones AND
 class RestriccionCombinadaAND(val restricciones : MutableSet<Restriccion>) : Restriccion() {
-    override fun cumpleRestriccion(programa: Programa): Boolean = restricciones.all { it.cumpleRestriccion(programa) }
+    override fun seCumple(programa: Programa): Boolean = restricciones.all { it.seCumple(programa) }
 }
 
 // *** FIN PUNTO 1 ***
@@ -187,16 +196,25 @@ class CambiarDiaEmision(val diaElegido : DayOfWeek) : Accion {
 Hay una clase Grilla que:
 1. agrega restricciones y sus acciones si no se cumplen: programa tiene su lista de restricciones
 y las restricciones tienen su lista de acciones, no me parece responsabilidad de la Grilla.
-2. tiene una lista de Programas
-3. */
+2. tiene una lista de Programas / Programas en Revision
+3. Dispara el proceso de Revision: ve si los programas cumplen la restriccion o no
+*/
 
 // *** PUNTO 3: El Proceso ***
 class Grilla(){
     val listaDeProgramas : MutableList<Programa> = mutableListOf()
     val listaProgramasRevision : MutableList<Programa> = mutableListOf()
+    val observersProgramaCreado : MutableList<ProgramaObserver> = mutableListOf()
 
-    fun agregarPrograma(programa: Programa) =  listaDeProgramas.add(programa)   //podria agregar validacion para saber si está
+    fun agregarPrograma(programa: Programa) {
+        listaDeProgramas.add(programa)                      //podria agregar validacion para saber si está
+        observersProgramaCreado.forEach{ observer -> observer.ejecutarTarea() }
+    }
+
     fun eliminarPrograma(programa: Programa) = listaDeProgramas.remove(programa)
+
+    fun agregarObserver(observer : ProgramaObserver) = observersProgramaCreado.add(observer)
+    fun eliminarObserver(observer : ProgramaObserver) = observersProgramaCreado.remove(observer)
 
     fun devuelveIndicePrograma(programa : Programa) : Int = listaDeProgramas.indexOf(programa)
 
@@ -212,6 +230,11 @@ class Grilla(){
     fun agregarProgramaRevision(programa: Programa) = listaProgramasRevision.add(programa)  //de nuevo, podria haber validacion
     fun eliminarProgramaRevision(programa : Programa) = listaProgramasRevision.remove(programa)
 
+    fun procesoRevision() = listaProgramasRevision.forEach{ programa -> programa.cumpleRestricciones(this) }
 
+}
+
+interface ProgramaObserver {
+    abstract fun ejecutarTarea()
 }
 // *** FIN PUNTO 3 ***

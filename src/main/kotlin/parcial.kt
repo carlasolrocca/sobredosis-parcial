@@ -176,7 +176,7 @@ class FusionarPrograma() : Accion {
 }
 
 class CambiarDiaEmision(val diaElegido : DayOfWeek) : Accion {
-    override fun execute(programa: Programa, grilla: Grilla) {
+    override fun execute(programa: Programa, grilla: Grilla) {  //me parece bastante boludo esto
         programa.diaEmision = diaElegido
     }
 }
@@ -185,13 +185,15 @@ class CambiarDiaEmision(val diaElegido : DayOfWeek) : Accion {
 
 /*
 Hay una clase Grilla que:
-1. agrega restricciones y sus acciones
+1. agrega restricciones y sus acciones si no se cumplen: programa tiene su lista de restricciones
+y las restricciones tienen su lista de acciones, no me parece responsabilidad de la Grilla.
 2. tiene una lista de Programas
 3. */
 
 // *** PUNTO 3: El Proceso ***
 class Grilla(){
     val listaDeProgramas : MutableList<Programa> = mutableListOf()
+    val listaProgramasRevision : MutableList<Programa> = mutableListOf()
 
     fun agregarPrograma(programa: Programa) =  listaDeProgramas.add(programa)   //podria agregar validacion para saber si está
     fun eliminarPrograma(programa: Programa) = listaDeProgramas.remove(programa)
@@ -206,6 +208,10 @@ class Grilla(){
             listaDeProgramas.first()
         }
     }
+
+    fun agregarProgramaRevision(programa: Programa) = listaProgramasRevision.add(programa)  //de nuevo, podria haber validacion
+    fun eliminarProgramaRevision(programa : Programa) = listaProgramasRevision.remove(programa)
+
 
 }
 // *** FIN PUNTO 3 ***

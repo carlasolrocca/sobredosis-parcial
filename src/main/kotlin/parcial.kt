@@ -218,7 +218,7 @@ class Grilla(){
 
     fun agregarPrograma(programa: Programa) {
         listaDeProgramas.add(programa)                      //podria agregar validacion para saber si está
-        observersProgramaCreado.forEach{ observer -> observer.tareaProgramaCreado(programa) } //dispara los observers
+        observersProgramaCreado.forEach{ observer -> observer.tareaProgramaCreado(programa, this) } //dispara los observers
     }
 
     fun eliminarPrograma(programa: Programa) = listaDeProgramas.remove(programa)

@@ -255,3 +255,12 @@ class SacoProgramaRevision() : ProgramaObserver {
     }
 }
 // *** FIN PUNTO 3 ***
+interface MailSender {
+    fun sendMail(mail: Mail)
+}
+
+interface MensajeDeTexto {
+    fun sendMensaje(mensaje: MsjTexto)
+}
+data class Mail(val from : String, val to : String, val subject : String, val content : String)
+data class MsjTexto(val from : String, val to : String, val content : String)

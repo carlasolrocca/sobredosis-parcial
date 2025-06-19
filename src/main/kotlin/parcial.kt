@@ -1,7 +1,6 @@
 package ar.edu.unsam.algo2
 
 import java.time.DayOfWeek
-import java.time.LocalDate
 
 //Exceptions
 class BusinessException(mensaje: String) : Throwable()
@@ -19,7 +18,7 @@ class Programa(val titulo : String,
                val conductoresPrincipales: MutableList<String>,    //No se si hay class Conductor
                val presupuestoBase : Double,
                val sponsors: MutableList<String>,       //No se si hay class Sponsor
-               val diaEmision : MutableList<DayOfWeek>,
+               var diaEmision: DayOfWeek,
                val duracionMinutos : Int)
 {
     val restriccionesAsociadas : MutableList<Restriccion> = mutableListOf()
@@ -176,11 +175,9 @@ class FusionarPrograma() : Accion {
     }
 }
 
-class CambiarDiaEmision() : Accion {
-    val valoresDias = DayOfWeek.values()
-
+class CambiarDiaEmision(val diaElegido : DayOfWeek) : Accion {
     override fun execute(programa: Programa, grilla: Grilla) {
-
+        programa.diaEmision = diaElegido
     }
 }
 

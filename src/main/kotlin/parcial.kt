@@ -150,8 +150,24 @@ class ReemplazarPorLosSimpsons() : Accion {
 }
 
 class FusionarPrograma() : Accion {
+    //Elige al azar un sponsor de cada programa
+    private fun sponsorAzaroso(programa: Programa, otroPrograma: Programa): MutableList<String> = mutableListOf(programa.sponsors.random(), otroPrograma.sponsors.random())
+    //Trae al primer conductor de cada programa
+    private fun conductoresFusionados(programa: Programa, otroPrograma: Programa): MutableList<String> = mutableListOf(programa.conductoresPrincipales.first(), otroPrograma.conductoresPrincipales.first())
+
+    private fun tituloAzaroso() : String = mutableListOf("Impacto total", "Un buen dia").random()
+    private fun minimoPresupuesto(programa : Programa, otroPrograma : Programa) : Double = minOf(programa.presupuestoBase, otroPrograma.presupuestoBase)
+    private fun duracionFusionada(programa: Programa, otroPrograma: Programa): Int = programa.duracionMinutos + otroPrograma.duracionMinutos
+
+
     override fun execute(programa: Programa, grilla: Grilla) {
-        TODO("Implementar la lógica para fusionar el programa con el siguiente en la grilla")
+        val programaFusionado = Programa(
+            titulo = tituloAzaroso(),
+            conductoresPrincipales = conductoresFusionados(programa, grilla.siguientePrograma(programa)),
+            presupuestoBase = minimoPresupuesto(programa, grilla.siguientePrograma(programa)),
+            sponsors = sponsorAzaroso(programa, grilla.siguientePrograma(programa)),
+            diaEmision = programa.diaEmision,
+            duracionMinutos = duracionFusionada(programa, grilla.siguientePrograma(programa)))
     }
 }
 
@@ -175,6 +191,17 @@ class Grilla(){
 
     fun agregarPrograma(programa: Programa) =  listaDeProgramas.add(programa)   //podria agregar validacion para saber si está
     fun eliminarPrograma(programa: Programa) = listaDeProgramas.remove(programa)
+
+    fun devuelveIndicePrograma(programa : Programa) : Int = listaDeProgramas.indexOf(programa)
+
+    fun siguientePrograma(programa : Programa) : Programa {
+        val indiceActual = devuelveIndicePrograma(programa)
+        return if (indiceActual < listaDeProgramas.size - 1) { //si no es el ultimo
+            listaDeProgramas[indiceActual + 1]
+        }else {
+            listaDeProgramas.first()
+        }
+    }
 
 }
 // *** FIN PUNTO 3 ***

@@ -237,4 +237,21 @@ class Grilla(){
 interface ProgramaObserver {
     abstract fun ejecutarTarea()
 }
+
+class MailConductores() : ProgramaObserver {
+    override fun ejecutarTarea() {
+        TODO("Not yet implemented")
+    }
+
+}
+class MsjTextoPresupuesto() : ProgramaObserver {
+    override fun ejecutarTarea() {
+        TODO("Not yet implemented")
+    }
+}
+class SacoProgramaRevision() : ProgramaObserver {
+    override fun ejecutarTarea() {
+        TODO("Not yet implemented")
+    }
+}
 // *** FIN PUNTO 3 ***

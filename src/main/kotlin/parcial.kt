@@ -57,6 +57,8 @@ class Programa(val titulo : String,
 
     //Arma una lista con solo los mails de los conductores
     fun mailsConductores() = conductoresPrincipales.map{ it.email }
+
+    fun presupuestoMayorA(monto : Double) : Boolean = presupuestoBase > monto
 }
 
 
@@ -249,17 +251,27 @@ interface ProgramaObserver {
 class MailConductores(val mailSender : MailSender) : ProgramaObserver {
     override fun tareaProgramaCreado(programa : Programa) {
         programa.mailsConductores().forEach{ it -> mailSender.sendMail(Mail(
-            from = "programacionUnsam@gmail.com",
+            from = "unsamTV@gmail.com",
             to = it,        //cada mail sobre el que itera
             subject = "OPORTUNIDAD!",
             content = "Fuiste seleccionado para conducir ${programa.titulo}! Ponete en contacto con la gerencia"
         )) }
     }
-
 }
-class MsjTextoPresupuesto() : ProgramaObserver {
+
+//El monto es 100000 pero es mas escalable si recibe un valor. Podria tener una variable de instancia
+//con el monto 100.000 tambien.
+
+//No me queda en claro qué es la Agencia Publicitaria Cliowin, deberia ser una entidad?
+class MsjTextoPresupuesto(val mensajeSender : MsjTextoSender, val monto : Double) : ProgramaObserver {
     override fun tareaProgramaCreado(programa : Programa) {
-        TODO("Not yet implemented")
+        if(programa.presupuestoMayorA(monto)){
+            mensajeSender.sendMensaje(MsjTexto(
+                from = "unsamTV@gmail.com",
+                to = "Cliowin",
+                content = "${programa.presupuestoBase} -- ${programa.titulo} -- CONSEGUIR SPONSOR URGENTE!"
+            ))
+        }
     }
 }
 class SacoProgramaRevision() : ProgramaObserver {
@@ -272,7 +284,7 @@ interface MailSender {
     fun sendMail(mail: Mail)
 }
 
-interface MensajeDeTexto {
+interface MsjTextoSender {
     fun sendMensaje(mensaje: MsjTexto)
 }
 data class Mail(val from : String, val to : String, val subject : String, val content : String)

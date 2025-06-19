@@ -15,7 +15,7 @@ class BusinessException(mensaje: String) : Throwable()
 
 // *** PUNTO 1: Restricciones ***
 class Programa(val titulo : String,
-               val conductoresPrincipales: MutableList<String>,    //No se si hay class Conductor
+               val conductoresPrincipales: MutableList<Conductor>,    //No se si hay class Conductor
                val presupuestoBase : Double,
                val sponsors: MutableList<String>,       //No se si hay class Sponsor
                var diaEmision: DayOfWeek,
@@ -35,12 +35,12 @@ class Programa(val titulo : String,
     fun cantidadMaxRatings() : Boolean = ratingUltimasEmisiones.size == 5   //Solo admite 5 ratings
     fun ratingPromedio() : Double = ratingUltimasEmisiones.average()
     fun cantidadConductores() : Int = conductoresPrincipales.size
-    fun loConduce(conductor : String) : Boolean = conductoresPrincipales.contains(conductor)
+    fun loConduce(conductor : Conductor) : Boolean = conductoresPrincipales.contains(conductor)
     fun mitadConductores() : Int = conductoresPrincipales.size / 2
 
     //take toma los primeros "n" elementos y drop descarta los primeros "n" elementos
-    fun primeraMitadConductores() : MutableList<String> = conductoresPrincipales.take(mitadConductores()).toMutableList()
-    fun segundaMitadConductores() : MutableList<String> = conductoresPrincipales.drop(mitadConductores()).toMutableList()
+    fun primeraMitadConductores() : MutableList<Conductor> = conductoresPrincipales.take(mitadConductores()).toMutableList()
+    fun segundaMitadConductores() : MutableList<Conductor> = conductoresPrincipales.drop(mitadConductores()).toMutableList()
 
     fun mitadPresupuesto() : Double = presupuestoBase / 2
     fun mitadDuracion() : Int = duracionMinutos / 2
@@ -54,6 +54,9 @@ class Programa(val titulo : String,
             print("Cumple todas las condiciones")
         }
     }
+
+    //Arma una lista con solo los mails de los conductores
+    fun mailsConductores() = conductoresPrincipales.map{ it.email }
 }
 
 
@@ -75,7 +78,7 @@ class CantidadMaxConductores(val cantidad : Int) : Restriccion() {
     override fun seCumple(programa: Programa): Boolean = programa.cantidadConductores() <= cantidad
 }
 
-class ConductorEspecifico(val conductorDeseado : String) : Restriccion() {
+class ConductorEspecifico(val conductorDeseado : Conductor) : Restriccion() {
     override fun seCumple(programa: Programa): Boolean = programa.loConduce(conductorDeseado)
 }
 
@@ -148,7 +151,7 @@ class ReemplazarPorLosSimpsons() : Accion {
         grilla.eliminarPrograma(programa)
         val repeticionSimpsons = Programa(
             titulo = "Los Simpsons",
-            conductoresPrincipales = mutableListOf("Ninguno"),
+            conductoresPrincipales = mutableListOf(),
             presupuestoBase = 100.0,
             sponsors = mutableListOf("Fox"),
             diaEmision = programa.diaEmision,
@@ -162,7 +165,7 @@ class FusionarPrograma() : Accion {
     //Elige al azar un sponsor de cada programa
     private fun sponsorAzaroso(programa: Programa, otroPrograma: Programa): MutableList<String> = mutableListOf(programa.sponsors.random(), otroPrograma.sponsors.random())
     //Trae al primer conductor de cada programa
-    private fun conductoresFusionados(programa: Programa, otroPrograma: Programa): MutableList<String> = mutableListOf(programa.conductoresPrincipales.first(), otroPrograma.conductoresPrincipales.first())
+    private fun conductoresFusionados(programa: Programa, otroPrograma: Programa): MutableList<Conductor> = mutableListOf(programa.conductoresPrincipales.first(), otroPrograma.conductoresPrincipales.first())
 
     private fun tituloAzaroso() : String = mutableListOf("Impacto total", "Un buen dia").random()
     private fun minimoPresupuesto(programa : Programa, otroPrograma : Programa) : Double = minOf(programa.presupuestoBase, otroPrograma.presupuestoBase)
@@ -195,10 +198,15 @@ class CambiarDiaEmision(val diaElegido : DayOfWeek) : Accion {
 /*
 Hay una clase Grilla que:
 1. agrega restricciones y sus acciones si no se cumplen: programa tiene su lista de restricciones
-y las restricciones tienen su lista de acciones, no me parece responsabilidad de la Grilla.
+y las restricciones tienen su lista de acciones, no me parece responsabilidad de la Grilla ocuparse de eso.
 2. tiene una lista de Programas / Programas en Revision
 3. Dispara el proceso de Revision: ve si los programas cumplen la restriccion o no
+4. cada vez que se crea un programa (se agrega a la grilla) dispara Observers
 */
+
+//Creo la data class Conductor porque para el observer de envio de mails a Conductores no tiene
+//sentido que le mande a un String. Que sea object no me sirve porque no quiero un Singleton.
+data class Conductor(val nombre : String, val email : String)
 
 // *** PUNTO 3: El Proceso ***
 class Grilla(){
@@ -208,7 +216,7 @@ class Grilla(){
 
     fun agregarPrograma(programa: Programa) {
         listaDeProgramas.add(programa)                      //podria agregar validacion para saber si está
-        observersProgramaCreado.forEach{ observer -> observer.ejecutarTarea() }
+        observersProgramaCreado.forEach{ observer -> observer.tareaProgramaCreado(programa) } //dispara los observers
     }
 
     fun eliminarPrograma(programa: Programa) = listaDeProgramas.remove(programa)
@@ -235,22 +243,27 @@ class Grilla(){
 }
 
 interface ProgramaObserver {
-    abstract fun ejecutarTarea()
+    abstract fun tareaProgramaCreado(programa: Programa)
 }
 
-class MailConductores() : ProgramaObserver {
-    override fun ejecutarTarea() {
-        TODO("Not yet implemented")
+class MailConductores(val mailSender : MailSender) : ProgramaObserver {
+    override fun tareaProgramaCreado(programa : Programa) {
+        programa.mailsConductores().forEach{ it -> mailSender.sendMail(Mail(
+            from = "programacionUnsam@gmail.com",
+            to = it,        //cada mail sobre el que itera
+            subject = "OPORTUNIDAD!",
+            content = "Fuiste seleccionado para conducir ${programa.titulo}! Ponete en contacto con la gerencia"
+        )) }
     }
 
 }
 class MsjTextoPresupuesto() : ProgramaObserver {
-    override fun ejecutarTarea() {
+    override fun tareaProgramaCreado(programa : Programa) {
         TODO("Not yet implemented")
     }
 }
 class SacoProgramaRevision() : ProgramaObserver {
-    override fun ejecutarTarea() {
+    override fun tareaProgramaCreado(programa : Programa) {
         TODO("Not yet implemented")
     }
 }

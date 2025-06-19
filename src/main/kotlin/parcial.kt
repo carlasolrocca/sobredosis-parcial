@@ -212,7 +212,7 @@ data class Conductor(val nombre : String, val email : String)
 
 // *** PUNTO 3: El Proceso ***
 class Grilla(){
-    val listaDeProgramas : MutableList<Programa> = mutableListOf()
+    val listaDeProgramas : MutableList<Programa> = mutableListOf()  //los que estan en grilla
     val listaProgramasRevision : MutableList<Programa> = mutableListOf()
     val observersProgramaCreado : MutableList<ProgramaObserver> = mutableListOf()
 
@@ -240,16 +240,19 @@ class Grilla(){
     fun agregarProgramaRevision(programa: Programa) = listaProgramasRevision.add(programa)  //de nuevo, podria haber validacion
     fun eliminarProgramaRevision(programa : Programa) = listaProgramasRevision.remove(programa)
 
+    //Chequea que los programas que estan en Revision cumplan con las restricciones (si no, manda la accion)
     fun procesoRevision() = listaProgramasRevision.forEach{ programa -> programa.cumpleRestricciones(this) }
 
+    //Es conjuntos: saca de En Revision a los programas que se eliminaron de la Grilla
+    fun eliminarProgramasEnRevisionDeGrilla() = listaProgramasRevision.removeAll{ programa -> !listaDeProgramas.contains(programa)}
 }
 
 interface ProgramaObserver {
-    abstract fun tareaProgramaCreado(programa: Programa)
+    abstract fun tareaProgramaCreado(programa: Programa, grilla : Grilla)
 }
 
 class MailConductores(val mailSender : MailSender) : ProgramaObserver {
-    override fun tareaProgramaCreado(programa : Programa) {
+    override fun tareaProgramaCreado(programa : Programa, grilla : Grilla) {
         programa.mailsConductores().forEach{ it -> mailSender.sendMail(Mail(
             from = "unsamTV@gmail.com",
             to = it,        //cada mail sobre el que itera
@@ -264,7 +267,7 @@ class MailConductores(val mailSender : MailSender) : ProgramaObserver {
 
 //No me queda en claro qué es la Agencia Publicitaria Cliowin, deberia ser una entidad?
 class MsjTextoPresupuesto(val mensajeSender : MsjTextoSender, val monto : Double) : ProgramaObserver {
-    override fun tareaProgramaCreado(programa : Programa) {
+    override fun tareaProgramaCreado(programa : Programa, grilla : Grilla) {
         if(programa.presupuestoMayorA(monto)){
             mensajeSender.sendMensaje(MsjTexto(
                 from = "unsamTV@gmail.com",
@@ -274,9 +277,13 @@ class MsjTextoPresupuesto(val mensajeSender : MsjTextoSender, val monto : Double
         }
     }
 }
-class SacoProgramaRevision() : ProgramaObserver {
-    override fun tareaProgramaCreado(programa : Programa) {
-        TODO("Not yet implemented")
+
+//Quite los programas de la "Revision" a todos los que NO FORMAN PARTE DE LA GRILLA, o sea
+//que no estan en listaDeProgramas
+//Saca de En Revision a los programas que no estan en la grilla
+class ActualizacionListaEnRevision() : ProgramaObserver {
+    override fun tareaProgramaCreado(programa : Programa, grilla : Grilla) {
+        grilla.eliminarProgramasEnRevisionDeGrilla()
     }
 }
 // *** FIN PUNTO 3 ***
